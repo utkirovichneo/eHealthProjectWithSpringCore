@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 public class AuthUserAcademicDegree {
-    private int authuseracademicdegree;
+    private int authuseracademicdegreeid;
     private int authuseremployeeid;
     private String degree;
     private String graduated;

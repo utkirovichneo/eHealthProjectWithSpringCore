@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class MedicalHistory {
     private int medicalhistoryid;
-    private int patientid;
+    private int authuserpatientid;
 }

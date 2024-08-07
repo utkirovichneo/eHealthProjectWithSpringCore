@@ -15,5 +15,4 @@ public class AuthUserRole {
     private int authuserroleid;
     private String name;
     private String code;
-    private List<AuthUserPermission> permissions;
 }

@@ -14,5 +14,4 @@ import java.util.List;
 public class AuthUserEmployee {
     private int authuseremployeeid;
     private int authuserid;
-    private List<AuthUserAcademicDegree> degrees;
 }

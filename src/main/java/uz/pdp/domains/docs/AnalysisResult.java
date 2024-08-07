@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class AnalysisResult {
     private int analysisresultid;
     private int medicalhistoryid;
+    private String description;
 }

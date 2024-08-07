@@ -5,15 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AnalysisDocument {
+public class ResultItem {
+    private int resultitemid;
     private int analysisdocumentid;
-    private int analysisresultid;
-    private LocalDateTime analysisresultdate;
-    private String analysistype;
+    private String name;
+    private String result;
 }

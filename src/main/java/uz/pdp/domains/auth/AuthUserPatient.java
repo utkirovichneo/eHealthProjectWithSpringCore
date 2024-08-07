@@ -12,5 +12,4 @@ import lombok.NoArgsConstructor;
 public class AuthUserPatient {
     private int authuserpatientid;
     private int authuserid;
-    private int medicalhistoryid;
 }

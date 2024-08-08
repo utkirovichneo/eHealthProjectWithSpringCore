@@ -1,25 +1,41 @@
 package uz.pdp.dao.docs;
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Component;
+import uz.pdp.config.jdbc.SpringJdbcConfig;
 import uz.pdp.dao.BaseDao;
 import uz.pdp.domains.docs.ResultItem;
 
+import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Objects;
 
+@Component
 public class ResultItemDao implements BaseDao<ResultItem> {
 
     private JdbcTemplate jdbcTemplate;
     private BeanPropertyRowMapper<ResultItem> rowMapper = BeanPropertyRowMapper.newInstance(ResultItem.class);
 
     public ResultItemDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        this.jdbcTemplate = new AnnotationConfigApplicationContext(SpringJdbcConfig.class).getBean(JdbcTemplate.class);
     }
 
     @Override
-    public void create(ResultItem resultItem) {
+    public int create(ResultItem resultItem) {
         var sql = "insert into resultitem (analysisdocumentid, name, result) values (?, ?, ?);";
-        jdbcTemplate.update(sql, resultItem.getAnalysisdocumentid(), resultItem.getName(), resultItem.getResult());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, new String[]{"resultitemid"});
+            preparedStatement.setInt(1, resultItem.getAnalysisdocumentid());
+            preparedStatement.setString(2, resultItem.getName());
+            preparedStatement.setString(3, resultItem.getResult());
+            return preparedStatement;
+        }, keyHolder);
+        return Objects.requireNonNull(keyHolder.getKey()).intValue();
     }
 
     @Override

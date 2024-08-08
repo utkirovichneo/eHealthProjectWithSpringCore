@@ -1,29 +1,43 @@
 package uz.pdp.dao.routeandqueue;
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Component;
+import uz.pdp.config.jdbc.SpringJdbcConfig;
 import uz.pdp.dao.BaseDao;
 import uz.pdp.domains.routeandqueue.AppointmentWithDoctor;
 
+import java.sql.PreparedStatement;
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 
+@Component
 public class AppointmentWithDoctorDao implements BaseDao<AppointmentWithDoctor> {
 
     private JdbcTemplate jdbcTemplate;
     private BeanPropertyRowMapper<AppointmentWithDoctor> rowMapper = BeanPropertyRowMapper.newInstance(AppointmentWithDoctor.class);
 
     public AppointmentWithDoctorDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        this.jdbcTemplate = new AnnotationConfigApplicationContext(SpringJdbcConfig.class).getBean(JdbcTemplate.class);
     }
 
     @Override
-    public void create(AppointmentWithDoctor appointmentWithDoctor) {
+    public int create(AppointmentWithDoctor appointmentWithDoctor) {
         var sql = "insert into appointmentwithdoctor (roomanddoctorid, authuserpatientid, sequencenumber, estimatedqueuetime) values (?, ?, ?, ?);";
-        jdbcTemplate.update(sql,
-                appointmentWithDoctor.getRoomanddoctorid(),
-                appointmentWithDoctor.getAuthuserpatientid(),
-                appointmentWithDoctor.getSequencenumber(),
-                appointmentWithDoctor.getEstimatedqueuetime());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, new String[]{});
+            preparedStatement.setInt(1, appointmentWithDoctor.getRoomanddoctorid());
+            preparedStatement.setInt(2, appointmentWithDoctor.getAuthuserpatientid());
+            preparedStatement.setInt(3, appointmentWithDoctor.getSequencenumber());
+            preparedStatement.setTimestamp(4, Timestamp.valueOf(appointmentWithDoctor.getEstimatedqueuetime()));
+            return preparedStatement;
+        }, keyHolder);
+        return Objects.requireNonNull(keyHolder.getKey()).intValue();
     }
 
     @Override

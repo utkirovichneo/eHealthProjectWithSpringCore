@@ -1,25 +1,40 @@
 package uz.pdp.dao.auth;
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Component;
+import uz.pdp.config.jdbc.SpringJdbcConfig;
 import uz.pdp.dao.BaseDao;
 import uz.pdp.domains.auth.AuthUserPermission;
 
+import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Objects;
 
+@Component
 public class AuthUserPermissionDao implements BaseDao<AuthUserPermission> {
 
     private JdbcTemplate jdbcTemplate;
     private BeanPropertyRowMapper<AuthUserPermission> rowMapper = BeanPropertyRowMapper.newInstance(AuthUserPermission.class);
 
     public AuthUserPermissionDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        this.jdbcTemplate = new AnnotationConfigApplicationContext(SpringJdbcConfig.class).getBean(JdbcTemplate.class);
     }
 
     @Override
-    public void create(AuthUserPermission authUserPermission) {
+    public int create(AuthUserPermission authUserPermission) {
         var sql = "insert into authuserpermission (name, code) values (?, ?);";
-        jdbcTemplate.update(sql, authUserPermission.getName(), authUserPermission.getCode());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, new String[]{"authuserpermissionid"});
+            preparedStatement.setString(1, authUserPermission.getName());
+            preparedStatement.setString(2, authUserPermission.getCode());
+            return preparedStatement;
+        }, keyHolder);
+        return Objects.requireNonNull(keyHolder.getKey()).intValue();
     }
 
     @Override

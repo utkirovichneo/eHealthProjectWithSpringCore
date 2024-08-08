@@ -1,25 +1,39 @@
 package uz.pdp.dao.auth;
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Component;
+import uz.pdp.config.jdbc.SpringJdbcConfig;
 import uz.pdp.dao.BaseDao;
 import uz.pdp.domains.auth.AuthUserPatient;
 
+import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Objects;
 
+@Component
 public class AuthUserPatientDao implements BaseDao<AuthUserPatient> {
 
     private JdbcTemplate jdbcTemplate;
     private BeanPropertyRowMapper<AuthUserPatient> rowMapper = BeanPropertyRowMapper.newInstance(AuthUserPatient.class);
 
     public AuthUserPatientDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        this.jdbcTemplate = new AnnotationConfigApplicationContext(SpringJdbcConfig.class).getBean(JdbcTemplate.class);
     }
 
     @Override
-    public void create(AuthUserPatient authUserPatient) {
+    public int create(AuthUserPatient authUserPatient) {
         var sql = "insert into authuserpatient (authuserid) values (?);";
-        jdbcTemplate.update(sql, authUserPatient.getAuthuserid());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, new String[]{"authuserpatientid"});
+            preparedStatement.setInt(1, authUserPatient.getAuthuserid());
+            return preparedStatement;
+        }, keyHolder);
+        return Objects.requireNonNull(keyHolder.getKey()).intValue();
     }
 
     @Override
